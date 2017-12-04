@@ -1,0 +1,10 @@
+[package]
+name = "rust_top"
+version = "0.1.0"
+authors = ["Jochen Mader <pflanzenmoerder@gmail.com>"]
+
+[dependencies]
+rand = "0.3.18"
+termion = "*"
+sys-info = "0.5.3"
+ctrlc = "3.0.3"
