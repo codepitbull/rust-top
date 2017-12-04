@@ -7,4 +7,4 @@ authors = ["Jochen Mader <pflanzenmoerder@gmail.com>"]
 rand = "0.3.18"
 termion = "*"
 sys-info = "0.5.3"
-ctrlc = "3.0.3"
+ctrlc = { version = "3.0.3", features = ["termination"] }
