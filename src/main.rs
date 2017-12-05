@@ -19,26 +19,11 @@ fn memory_bar(mem_info:MemInfo) -> LabelledBar {
     LabelledBar::new("memory : ".to_string(), clr)
 }
 
-fn swap_bar(swap_info:SwapInfo) -> LabelledBar {
-    let one_slot = swap_info.total / 100;
-    let clr: Box<Fn() -> f32> = Box::new(move || swap_info.free as f32 / one_slot as f32);
-    LabelledBar::new("swap   : ".to_string(), clr)
-}
-
 fn disk_bar(disk_info:DiskInfo) -> LabelledBar {
     let one_slot = disk_info.total / 100;
     let clr: Box<Fn() -> f32> = Box::new(move || disk_info.free as f32 / one_slot as f32);
     LabelledBar::new("disk   : ".to_string(), clr)
 }
-
-//fn cpu_bar(cpu_info:CpuInfo) -> LabelledBar {
-//    let one_slot = cpu_info.total / 100;
-//    let clr: Box<Fn() -> u64> = Box::new(move || {
-//        let nr_slots = disk_info.free / one_slot;
-//        100 - nr_slots
-//    });
-//    LabelledBar::new("disk (used/free)  : ".to_string(), clr)
-//}
 
 fn print_cpu<W: Write>(stdout: &mut W, cpu_info:CpuInfo, load_info:LoadInfo) {
 
@@ -98,13 +83,12 @@ fn main() {
                termion::cursor::Goto(1, 1),
                termion::clear::All)
             .unwrap();
-        let sysinfo = SysInfo::new();
+
         let (width,_) = termion::terminal_size().unwrap();
 
-        print_cpu(&mut stdout, sysinfo.cpu_info, sysinfo.load_info);
-        memory_bar(sysinfo.mem_info).update(&mut stdout, width);
-        disk_bar(sysinfo.disk_info).update(&mut stdout, width);
-//        cpu_bar(sysinfo.cpu_info).update(&mut stdout);
+        print_cpu(&mut stdout, CpuInfo::new().unwrap(), LoadInfo::new().unwrap());
+        memory_bar(MemInfo::new().unwrap()).update(&mut stdout, width);
+        disk_bar(DiskInfo::new().unwrap()).update(&mut stdout, width);
         write!(stdout, "{} ", termion::style::Reset).unwrap();
         thread::sleep(Duration::from_millis(100));
     }

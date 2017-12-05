@@ -10,11 +10,15 @@ pub mod rust_top {
     }
 
     impl CpuInfo {
-        pub fn new() -> CpuInfo {
-            CpuInfo {
-                num: cpu_num().unwrap(),
-                speed: cpu_speed().unwrap()
-            }
+        pub fn new() -> Result<CpuInfo, Error> {
+            cpu_num().and_then(|num| {
+                cpu_speed().map(|speed|
+                    CpuInfo {
+                        num: num,
+                        speed: speed
+                    }
+                )
+            })
         }
     }
 
@@ -25,13 +29,14 @@ pub mod rust_top {
     }
 
     impl LoadInfo {
-        pub fn new() -> LoadInfo {
-            let load = loadavg().unwrap();
-            LoadInfo {
-                one: load.one,
-                five: load.five,
-                fiveteen: load.fifteen
-            }
+        pub fn new() -> Result<LoadInfo, Error> {
+            loadavg().map(|loadavg|
+                LoadInfo {
+                    one: loadavg.one,
+                    five: loadavg.five,
+                    fiveteen: loadavg.fifteen
+                }
+            )
         }
     }
 
@@ -44,30 +49,16 @@ pub mod rust_top {
     }
 
     impl MemInfo {
-        pub fn new() -> MemInfo {
-            let mem = mem_info().unwrap();
-            MemInfo{
-                total: mem.total,
-                free: mem.free,
-                avail: mem.avail,
-                buffers: mem.buffers,
-                cached: mem.cached
-            }
-        }
-    }
-
-    pub struct SwapInfo {
-        pub total: u64,
-        pub free: u64
-    }
-
-    impl SwapInfo {
-        pub fn new() -> SwapInfo {
-            let mem = mem_info().unwrap();
-            SwapInfo{
-                total: mem.swap_total,
-                free: mem.swap_free
-            }
+        pub fn new() -> Result<MemInfo, Error> {
+            mem_info().map(|mem|
+                MemInfo{
+                    total: mem.total,
+                    free: mem.free,
+                    avail: mem.avail,
+                    buffers: mem.buffers,
+                    cached: mem.cached
+                }
+            )
         }
     }
 
@@ -77,34 +68,13 @@ pub mod rust_top {
     }
 
     impl DiskInfo {
-        pub fn new() -> DiskInfo {
-            let disk = disk_info().unwrap();
-            DiskInfo {
-                total: disk.total,
-                free: disk.free
-            }
-        }
-    }
-
-    pub struct SysInfo {
-        pub os: String,
-        pub cpu_info: CpuInfo,
-        pub load_info: LoadInfo,
-        pub mem_info: MemInfo,
-        pub swap_info: SwapInfo,
-        pub disk_info: DiskInfo
-    }
-
-    impl SysInfo {
-        pub fn new() -> SysInfo {
-            SysInfo {
-                os: os_type().unwrap() + " " + &os_release().unwrap(),
-                cpu_info: CpuInfo::new(),
-                load_info: LoadInfo::new(),
-                mem_info: MemInfo::new(),
-                swap_info: SwapInfo::new(),
-                disk_info: DiskInfo::new()
-            }
+        pub fn new() -> Result<DiskInfo, Error> {
+            disk_info().map(|disk|
+                DiskInfo {
+                    total: disk.total,
+                    free: disk.free
+                }
+            )
         }
     }
 
@@ -113,10 +83,31 @@ pub mod rust_top {
         use super::*;
 
         #[test]
-        fn it_works() {
-            let sys_info = SysInfo::new();
-            assert_eq!(true, sys_info.cpu_info.num > 0);
-            assert_eq!(true, sys_info.cpu_info.speed > 0);
+        fn test_cpu_info() {
+            let cpu_info = CpuInfo::new().unwrap();
+            assert_eq!(true, cpu_info.num > 0);
+            assert_eq!(true, cpu_info.speed > 0);
+        }
+
+        #[test]
+        fn test_disk_info() {
+            let disk_info = DiskInfo::new().unwrap();
+            assert_eq!(true, disk_info.free > 0);
+            assert_eq!(true, disk_info.total > 0);
+        }
+
+        #[test]
+        fn test_mem_info() {
+            let mem_info = MemInfo::new().unwrap();
+            assert_eq!(true, mem_info.free > 0);
+            assert_eq!(true, mem_info.total > 0);
+        }
+
+        #[test]
+        fn test_load_info() {
+            let load_info = LoadInfo::new().unwrap();
+            assert_eq!(true, load_info.free > 0);
+            assert_eq!(true, load_info.total > 0);
         }
     }
 }
