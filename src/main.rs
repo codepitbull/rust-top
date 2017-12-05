@@ -1,17 +1,21 @@
-extern crate termion;
 extern crate sys_info;
 extern crate ctrlc;
+
 use std::sync::atomic::{AtomicBool, Ordering};
+use std::io::{Write, stdout};
+use std::time::Duration;
 use std::sync::Arc;
+use std::thread;
+
+extern crate termion;
 use termion::raw::IntoRawMode;
 use termion::color;
-use std::io::{Write, stdout};
-mod rust_top;
-use rust_top::rust_top::*;
-use std::time::Duration;
-use std::thread;
+
 mod display_elements;
 use display_elements::*;
+
+mod rust_top;
+use rust_top::rust_top::*;
 
 fn memory_bar(mem_info:MemInfo) -> LabelledBar {
     let one_slot = mem_info.total / 100;
