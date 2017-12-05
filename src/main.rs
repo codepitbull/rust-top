@@ -4,13 +4,14 @@ extern crate ctrlc;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use termion::raw::IntoRawMode;
+use termion::color;
 use std::io::{Write, stdout};
 mod rust_top;
 use rust_top::rust_top::*;
 use std::time::Duration;
 use std::thread;
 mod display_elements;
-use display_elements::display_elements::*;
+use display_elements::*;
 
 fn memory_bar(mem_info:MemInfo) -> LabelledBar {
     let one_slot = mem_info.total / 100;
@@ -42,35 +43,35 @@ fn disk_bar(disk_info:DiskInfo) -> LabelledBar {
 fn print_cpu<W: Write>(stdout: &mut W, cpu_info:CpuInfo, load_info:LoadInfo) {
 
     let one_color =
-        if load_info.one > cpu_info.num as f64 {termion::color::Rgb(255, 0, 0)}
-        else if load_info.one >= (cpu_info.num as f64 * 0.8){termion::color::Rgb(255, 255, 0)}
-        else {termion::color::Rgb(0, 255, 0)};
+        if load_info.one > cpu_info.num as f64 { RED }
+        else if load_info.one >= (cpu_info.num as f64 * 0.8){ YELLOW }
+        else { GREEN };
 
     let five_color =
-        if load_info.five > cpu_info.num as f64 {termion::color::Rgb(255, 0, 0)}
-        else if load_info.five >= (cpu_info.num as f64 * 0.8){termion::color::Rgb(255, 255, 0)}
-        else {termion::color::Rgb(0, 255, 0)};
+        if load_info.five > cpu_info.num as f64 { RED }
+        else if load_info.five >= (cpu_info.num as f64 * 0.8){ YELLOW }
+        else { GREEN };
 
     let fiveteen_color =
-        if load_info.fiveteen > cpu_info.num as f64 {termion::color::Rgb(255, 0, 0)}
-        else if load_info.fiveteen >= (cpu_info.num as f64 * 0.8){termion::color::Rgb(255, 255, 0)}
-        else {termion::color::Rgb(0, 255, 0)};
+        if load_info.fiveteen > cpu_info.num as f64 { RED }
+        else if load_info.fiveteen >= (cpu_info.num as f64 * 0.8){ YELLOW }
+        else { GREEN };
 
 
     write!(stdout,
-            "{}[ #CPU: {} ][ spd: {} ][ 1: {}{:.2}{} 5: {}{:.2}{} 15: {}{:.2}{} ]",
-            termion::color::Fg(termion::color::Rgb(255, 255, 255)),
-            cpu_info.num,
-            cpu_info.speed,
-            termion::color::Fg(one_color),
-            load_info.one,
-            termion::color::Fg(termion::color::Rgb(255, 255, 255)),
-            termion::color::Fg(five_color),
-            load_info.five,
-            termion::color::Fg(termion::color::Rgb(255, 255, 255)),
-            termion::color::Fg(fiveteen_color),
-            load_info.fiveteen,
-            termion::color::Fg(termion::color::Rgb(255, 255, 255)))
+           "{}[ #CPU: {} ][ spd: {} ][ 1: {}{:.2}{} 5: {}{:.2}{} 15: {}{:.2}{} ]",
+           color::Fg(WHITE),
+           cpu_info.num,
+           cpu_info.speed,
+           color::Fg(one_color),
+           load_info.one,
+           color::Fg(WHITE),
+           color::Fg(five_color),
+           load_info.five,
+           color::Fg(WHITE),
+           color::Fg(fiveteen_color),
+           load_info.fiveteen,
+           color::Fg(WHITE))
         .unwrap();
     write!(stdout, "\n\r").unwrap();
 }
@@ -98,7 +99,7 @@ fn main() {
                termion::clear::All)
             .unwrap();
         let sysinfo = SysInfo::new();
-        let (width,height) = termion::terminal_size().unwrap();
+        let (width,_) = termion::terminal_size().unwrap();
 
         print_cpu(&mut stdout, sysinfo.cpu_info, sysinfo.load_info);
         memory_bar(sysinfo.mem_info).update(&mut stdout, width);
