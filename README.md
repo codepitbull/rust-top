@@ -10,3 +10,5 @@ cargo run
 And watch a stupid simple mini-top pop up.
 
 Exit by pressing 'q'
+
+![rust-top](rust-top.png)
