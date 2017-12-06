@@ -100,9 +100,24 @@ fn main() {
 
         let (width,_) = termion::terminal_size().unwrap();
 
-        print_cpu(&mut stdout, CpuInfo::new().unwrap(), LoadInfo::new().unwrap());
-        memory_bar(MemInfo::new().unwrap()).update(&mut stdout, width);
-        disk_bar(DiskInfo::new().unwrap()).update(&mut stdout, width);
+        CpuInfo::new()
+            .map_err(|_| println!("Unable to acquire CPU-info"))
+            .and_then(|cpu_info| LoadInfo::new()
+                .map_err(|_|println!("Unable to acquire LOAD-info"))
+                .map(|load_info| print_cpu(&mut stdout, cpu_info, load_info))
+            )
+            .unwrap();
+
+        MemInfo::new()
+            .map_err(|_| println!("Unable to acquire MEM-info"))
+            .map(|mem_info| memory_bar(mem_info).update(&mut stdout, width))
+            .unwrap();
+
+        DiskInfo::new()
+            .map_err(|_| println!("Unable to acquire DISK-info"))
+            .map(|disk_info| disk_bar(disk_info).update(&mut stdout, width))
+            .unwrap();
+
         write!(stdout, "{} ", termion::style::Reset).unwrap();
         thread::sleep(Duration::from_millis(100));
     }
