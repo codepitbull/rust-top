@@ -1,21 +1,23 @@
 extern crate sys_info;
-extern crate ctrlc;
 
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::io::{Write, stdout};
+use std::io::{Write, stdout, stdin};
 use std::time::Duration;
 use std::sync::Arc;
 use std::thread;
 
 extern crate termion;
 use termion::raw::IntoRawMode;
+use termion::input::TermRead;
 use termion::color;
+use termion::event::{Key, Event};
 
 mod display_elements;
 use display_elements::*;
 
 mod rust_top;
 use rust_top::rust_top::*;
+
 
 fn memory_bar(mem_info:MemInfo) -> LabelledBar {
     let one_slot = mem_info.total / 100;
@@ -69,17 +71,25 @@ fn main() {
     let mut stdout = stdout().into_raw_mode().unwrap();
 
     write!(stdout,
-             "{}{}{}Use the up/down arrow keys to change the blue in the rainbow.",
+             "{}{}{}",
              termion::clear::All,
              termion::cursor::Goto(1, 1),
              termion::cursor::Hide)
         .unwrap();
 
     let running = Arc::new(AtomicBool::new(true));
-    let r = running.clone();
-    ctrlc::set_handler(move || {
-        r.store(false, Ordering::SeqCst);
-    }).expect("Error setting Ctrl-C handler");
+    let running_thread = running.clone();
+
+    thread::spawn(move || {
+        let stdin = stdin();
+        for c in stdin.events() {
+            let evt = c.unwrap();
+            match evt {
+                Event::Key(Key::Char('q')) => running_thread.store(false, Ordering::SeqCst),
+                _ => {}
+            }
+        }
+    });
 
     while running.load(Ordering::SeqCst) {
         write!(stdout,
@@ -96,6 +106,6 @@ fn main() {
         write!(stdout, "{} ", termion::style::Reset).unwrap();
         thread::sleep(Duration::from_millis(100));
     }
-    println!("Got it! Exiting...");
-
+    write!(stdout, "{}", termion::cursor::Show).unwrap();
+    println!("Exiting...");
 }
