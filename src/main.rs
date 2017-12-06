@@ -50,7 +50,7 @@ fn print_cpu<W: Write>(stdout: &mut W, cpu_info:CpuInfo, load_info:LoadInfo) {
 
 
     write!(stdout,
-           "{}[ #CPU: {} ][ spd: {} ][ 1: {}{:.2}{} 5: {}{:.2}{} 15: {}{:.2}{} ]",
+           "{}[ #CPU: {} ][ spd: {} ][ 1: {}{:.2}{} 5: {}{:.2}{} 15: {}{:.2}{} ]\n\r",
            color::Fg(WHITE),
            cpu_info.num,
            cpu_info.speed,
@@ -64,7 +64,6 @@ fn print_cpu<W: Write>(stdout: &mut W, cpu_info:CpuInfo, load_info:LoadInfo) {
            load_info.fiveteen,
            color::Fg(WHITE))
         .unwrap();
-    write!(stdout, "\n\r").unwrap();
 }
 
 fn main() {
@@ -101,20 +100,20 @@ fn main() {
         let (width,_) = termion::terminal_size().unwrap();
 
         CpuInfo::new()
-            .map_err(|_| println!("Unable to acquire CPU-info"))
+            .map_err(|_| write!(stdout, "Unable to acquire CPU-info\n\r").unwrap())
             .and_then(|cpu_info| LoadInfo::new()
-                .map_err(|_|println!("Unable to acquire LOAD-info"))
+                .map_err(|_|write!(stdout, "Unable to acquire LOAD-info\n\r").unwrap())
                 .map(|load_info| print_cpu(&mut stdout, cpu_info, load_info))
             )
             .unwrap();
 
         MemInfo::new()
-            .map_err(|_| println!("Unable to acquire MEM-info"))
+            .map_err(|_| write!(stdout, "Unable to acquire MEM-info\n\r").unwrap())
             .map(|mem_info| memory_bar(mem_info).update(&mut stdout, width))
             .unwrap();
 
         DiskInfo::new()
-            .map_err(|_| println!("Unable to acquire DISK-info"))
+            .map_err(|_| write!(stdout, "Unable to acquire DISK-info\n\r").unwrap())
             .map(|disk_info| disk_bar(disk_info).update(&mut stdout, width))
             .unwrap();
 
@@ -122,5 +121,5 @@ fn main() {
         thread::sleep(Duration::from_millis(100));
     }
     write!(stdout, "{}", termion::cursor::Show).unwrap();
-    println!("Exiting...");
+    write!(stdout, "Exiting...\n\r").unwrap();
 }
